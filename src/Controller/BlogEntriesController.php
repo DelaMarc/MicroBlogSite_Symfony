@@ -39,7 +39,7 @@ final class BlogEntriesController extends AbstractController
 
         $blogEntries = $repository->getClassName();
 
-        dd($blogEntries);
+        //dd($blogEntries);
         return $this->render('index.html.twig');
     }
 }
