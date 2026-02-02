@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\BlogEntry;
+use App\Form\BlogEntryFormType;
 use App\Repository\BlogEntryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\Request;
 
 final class BlogEntriesController extends AbstractController
 {
@@ -41,6 +44,39 @@ final class BlogEntriesController extends AbstractController
 
         return $this->render('blogEntries/index.html.twig', [
             'blogEntries' => $blogEntries,
+        ]);
+    }
+
+    #[Route('/blogEntries/create', name: 'create_blog_entry')]
+    public function create(Request $request): Response
+    {
+        $blogEntry = new BlogEntry();
+        $form = $this->createForm(BlogEntryFormType::class, $blogEntry);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()){
+            $newBlogEntry = $form->getData();
+            $imagePath = $form->get('imagePath')->getData();
+            if ($imagePath){
+                $newFileName = uniqid().'.'.$imagePath->guessExtension();
+
+                try {
+                    $imagePath->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads',
+                        $newFileName
+                    );
+                } catch (FileException $e) {
+                    return new Response($e->getMessage());
+                }
+                $newBlogEntry->setImagePath('/uploads/'.$newFileName);
+            }
+
+            $this->em->persist($newBlogEntry);
+            $this->em->flush();
+            return $this->redirectToRoute('app_blog_entries');
+        }
+        return $this->render('blogEntries/create.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 
