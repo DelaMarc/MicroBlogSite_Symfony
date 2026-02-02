@@ -47,6 +47,49 @@ final class BlogEntriesController extends AbstractController
         ]);
     }
 
+    #[Route('/blogEntries/edit/{id}', name: 'edit_blog_entry')]
+    public function edit($id, Request $request): Response
+    {
+        $blogEntry = $this->em->getRepository(BlogEntry::class)->find($id);
+        $form = $this->createForm(BlogEntryFormType::class, $blogEntry);
+
+        $form->handleRequest($request);
+        $imagePath = $form->get('imagePath')->getData();
+        if ($form->isSubmitted() && $form->isValid()){
+            if ($imagePath){
+                if ($blogEntry->getImagepath() !== null){
+                    $oldImagePath = $this->getParameter('kernel.project_dir'). $blogEntry->getImagePath();
+                    // if (file_exists($oldImagePath)){
+                    //     unlink($oldImagePath);
+                    //     //dd('tried to delete old image');
+                    // }
+                    //dd($oldImagePath);
+                    $newFileName = uniqid().'.'.$imagePath->guessExtension();
+                    try {
+                        $imagePath->move(
+                            $this->getParameter('kernel.project_dir').'/public/uploads',
+                            $newFileName
+                        );
+                    } catch (FileException $e) {
+                        return new Response($e->getMessage());
+                    }
+                    $blogEntry->setImagePath('/uploads/'.$newFileName);
+                }
+            }
+
+            $blogEntry->setTitle($form->get('title')->getData());
+            $blogEntry->setReleaseYear($form->get('releaseYear')->getData());
+            $blogEntry->setDescription($form->get('description')->getData());
+            $this->em->flush();
+            return $this->redirectToRoute('app_blog_entries');
+
+        }
+        return $this->render('blogEntries/edit.html.twig', [
+            'blogEntry' => $blogEntry,
+            'form' => $form->createView(),
+        ]);
+    }
+
     #[Route('/blogEntries/create', name: 'create_blog_entry')]
     public function create(Request $request): Response
     {

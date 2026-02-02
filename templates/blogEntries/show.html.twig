@@ -29,5 +29,11 @@
         <p class="text-xl py-6">
             {{ blogEntry.description }}
         </p>
+
+        <a 
+            href="/blogEntries/edit/{{blogEntry.id}}" 
+            class="bg-green-500 font-bold py-2 px-4 rounded transition-all hover:bg-green-300">
+            Edit Blog Entry
+        </a>
     </div>
 {% endblock %}
