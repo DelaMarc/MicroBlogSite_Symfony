@@ -18,12 +18,12 @@ final class BlogEntriesController extends AbstractController
         $this->em = $em;
     }
 
-    #[Route('/blogEntries', name: 'app_blog_entries')]
+    #[Route('/blogEntries', methods:['GET'], name: 'app_blog_entries')]
     public function index(): Response
     {
         $repository = $this->em->getRepository(BlogEntry::class);
         // findAll() SELECT * FROM blog_entry;
-        //$blogEntries = $repository->findAll();
+        $blogEntries = $repository->findAll();
 
         // findAll() SELECT * FROM blog_entry WHERE id = 5;
         //$blogEntries = $repository->find(7);
@@ -37,9 +37,21 @@ final class BlogEntriesController extends AbstractController
         // count() SELECT COUNT() from blog_entry WHERE id = 7;
         //$blogEntries = $repository->count(['id' => 7]);
 
-        $blogEntries = $repository->getClassName();
+        //$blogEntries = $repository->getClassName();
 
-        //dd($blogEntries);
-        return $this->render('index.html.twig');
+        return $this->render('blogEntries/index.html.twig', [
+            'blogEntries' => $blogEntries,
+        ]);
+    }
+
+    #[Route('/blog/{id}', methods:['GET'], name: 'show_blog_entry')]
+    public function show($id): Response
+    {
+        $repository = $this->em->getRepository(BlogEntry::class);
+        $blogEntry = $repository->find($id);
+
+        return $this->render('blogEntries/show.html.twig', [
+            'blogEntry' => $blogEntry,
+        ]);
     }
 }
