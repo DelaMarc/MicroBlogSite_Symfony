@@ -8,7 +8,7 @@
             </h1>
 
             <span class="font-light text-gray-500 italic">
-                Created by Code With Dary
+                {{ app.user ? app.user.email : 'Not logged in' }}
             </span>
         </div>
     </div>
