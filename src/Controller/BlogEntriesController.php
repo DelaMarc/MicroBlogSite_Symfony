@@ -11,14 +11,30 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Path;
 
 final class BlogEntriesController extends AbstractController
 {
     private $em;
+    private $fileSystem;
 
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
+        $this->fileSystem = new Filesystem();
+    }
+
+    private function deleteImage($imagePath)
+    {
+        $fullImagePath = $this->getParameter('kernel.project_dir').'/public'. $imagePath;
+        // delete previous image if it exists
+        if (file_exists($fullImagePath)){
+            //unlink($oldImagePath);
+            $this->fileSystem->remove($fullImagePath);
+            //dd('tried to delete old image');
+        }
     }
 
     #[Route('/blogEntries', methods:['GET'], name: 'app_blog_entries')]
@@ -57,13 +73,9 @@ final class BlogEntriesController extends AbstractController
         $imagePath = $form->get('imagePath')->getData();
         if ($form->isSubmitted() && $form->isValid()){
             if ($imagePath){
-                if ($blogEntry->getImagepath() !== null){
-                    $oldImagePath = $this->getParameter('kernel.project_dir'). $blogEntry->getImagePath();
-                    // if (file_exists($oldImagePath)){
-                    //     unlink($oldImagePath);
-                    //     //dd('tried to delete old image');
-                    // }
-                    //dd($oldImagePath);
+                $oldImagePath = $blogEntry->getImagePath();
+                if ($oldImagePath !== null){
+                    $this->deleteImage($oldImagePath);
                     $newFileName = uniqid().'.'.$imagePath->guessExtension();
                     try {
                         $imagePath->move(
@@ -129,6 +141,7 @@ final class BlogEntriesController extends AbstractController
         $repository = $this->em->getRepository(BlogEntry::class);
         $blogEntry = $repository->find($id);
 
+        $this->deleteImage($blogEntry->getImagePath());
         $this->em->remove($blogEntry);
         $this->em->flush();
         return $this->redirectToRoute('app_blog_entries');
