@@ -25,6 +25,7 @@ class BlogEntryFormType extends AbstractType
                     'placeholder' => 'Enter Title...'
                 ),
                 'label' => false,
+                'required' => false,
             ])
             ->add('releaseYear',  IntegerType::class, [
                 'attr' => array(
@@ -32,6 +33,7 @@ class BlogEntryFormType extends AbstractType
                     'placeholder' => 'Enter Release Year...'
                 ),
                 'label' => false,
+                'required' => false,
             ])
             ->add('description', TextareaType::class, [
                 'attr' => array(
@@ -39,6 +41,7 @@ class BlogEntryFormType extends AbstractType
                     'placeholder' => 'Say what\'s on your mind...'
                 ),
                 'label' => false,
+                'required' => false,
             ])
             ->add('imagePath',  FileType::class, array(
                 'required' => false,
