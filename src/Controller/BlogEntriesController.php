@@ -123,6 +123,17 @@ final class BlogEntriesController extends AbstractController
         ]);
     }
 
+    #[Route('/blogEntries/delete/{id}', methods:['GET', 'DELETE'], name:'delete_blog_entry')]
+    public function delete($id): Response
+    {
+        $repository = $this->em->getRepository(BlogEntry::class);
+        $blogEntry = $repository->find($id);
+
+        $this->em->remove($blogEntry);
+        $this->em->flush();
+        return $this->redirectToRoute('app_blog_entries');
+    }
+
     #[Route('/blog/{id}', methods:['GET'], name: 'show_blog_entry')]
     public function show($id): Response
     {
