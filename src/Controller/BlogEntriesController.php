@@ -28,13 +28,15 @@ final class BlogEntriesController extends AbstractController
 
     private function deleteImage($imagePath)
     {
+        if ($imagePath == null || $imagePath == ''){
+            return;
+        }
         $fullImagePath = $this->getParameter('kernel.project_dir').'/public'. $imagePath;
         // delete previous image if it exists
         if (file_exists($fullImagePath)){
-            //unlink($oldImagePath);
             $this->fileSystem->remove($fullImagePath);
-            //dd('tried to delete old image');
         }
+
     }
 
     #[Route('/blogEntries', methods:['GET'], name: 'app_blog_entries')]
@@ -74,19 +76,17 @@ final class BlogEntriesController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()){
             if ($imagePath){
                 $oldImagePath = $blogEntry->getImagePath();
-                if ($oldImagePath !== null){
-                    $this->deleteImage($oldImagePath);
-                    $newFileName = uniqid().'.'.$imagePath->guessExtension();
-                    try {
-                        $imagePath->move(
-                            $this->getParameter('kernel.project_dir').'/public/uploads',
-                            $newFileName
-                        );
-                    } catch (FileException $e) {
-                        return new Response($e->getMessage());
-                    }
-                    $blogEntry->setImagePath('/uploads/'.$newFileName);
+                $this->deleteImage($oldImagePath);
+                $newFileName = uniqid().'.'.$imagePath->guessExtension();
+                try {
+                    $imagePath->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads',
+                        $newFileName
+                    );
+                } catch (FileException $e) {
+                    return new Response($e->getMessage());
                 }
+                $blogEntry->setImagePath('/uploads/'.$newFileName);
             }
 
             $blogEntry->setTitle($form->get('title')->getData());
